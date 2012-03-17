@@ -3514,6 +3514,10 @@ function FireworkView(canvas) {
       $this.explode(e.touches.$index((0)).pageX, e.touches.$index((1)).pageY);
     })
     , false);
+    for (var i = (0);
+     i < (3); i++) {
+      $this.explode(random() * canvas.width, (canvas.height / (4)).toInt());
+    }
   })
   );
 }
@@ -3569,10 +3573,10 @@ function randomColor() {
 }
 function main() {
   var canvas = get$$document().query("#night-sky");
-  var fm = new FireworkView(canvas);
+  var view = new FireworkView(canvas);
   var watcher = new FPSWatcher();
   get$$window().setInterval((function () {
-    fm.update();
+    view.update();
     watcher.update();
   })
   , (0));
