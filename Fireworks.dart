@@ -5,6 +5,13 @@
 
 #import('dart:html');
 
+final num quantity  = 360;
+final num size      = 2.0;
+final num decay     = 0.98;
+final num gravity   = 2.0;
+final num speed     = 6.0;
+
+
 num random() {
   final num N = 3;
   num gen = 0.0;
@@ -17,7 +24,7 @@ num random() {
 String randomColor() {
   final List<int> rgb = new List<int>(3);
   for(int i = 0; i < rgb.length; ++i) {
-    rgb[i] = (random() * 0xFF).toInt();
+    rgb[i] = (random() * 0xFF + 60).toInt();
   }
   return "rgb(${rgb[0]},${rgb[1]},${rgb[2]})";
 }
@@ -30,60 +37,47 @@ class Spark {
   num velX;
   num velY;
   num size;
-  bool sw;
 
   Spark(this.posX, this.posY, this.size) {
     num angle    = random() * rad;
-    num velocity = random() * 5.0;
+    num velocity = random() * speed;
 
     velX = Math.cos(angle) * velocity;
     velY = Math.sin(angle) * velocity;
-    sw = random() > 0.5;
   }
 
-  void computeVelocity() {
+  bool draw(FireworkView view, String color) {
     posX += velX;
     posY += velY;
-  }
+ 
+    velX *= decay;
+    velY *= decay;
+    size *= decay;
 
-  void computeDecay(num d) {
-    velX *= d;
-    velY *= d;
-    size *= d;
-  }
+    posY += gravity;
 
-  void computeGravity(num g) {
-    posY += g;
-  }
+    view.cx.beginPath();
+    view.cx.arc(posX, posY, size, 0, rad, true);
 
-  void draw(CanvasRenderingContext2D cx, String color) {
-    cx.beginPath();
-    cx.arc(posX, posY, size, 0, rad, true);
+    view.cx.fillStyle = color;
 
-    if(sw) {
-      cx.fillStyle = "rgb(255, 255, 255)";
-      sw = false;
-    }
-    else {
-      cx.fillStyle = color;
-      sw = true;
-    }
+    view.cx.fill();
 
-    cx.fill();
+    // returns true if it dismissed
+    if(size <= 0.1) return true;
+    if(posX <= 0 || posY <= 0) return true;
+    if(posX >= view.width || posY >= view.height) return true;
+    return false;
   }
 }
 
 class Firework {
-  static final num quantity  = 360;
-  static final num size      = 2.0;
-  static final num decay     = 0.98;
-  static final num gravity   = 1.5;
-
-
   final String color;
   final List<Spark> sparks;
+  
+  final FireworkView view;
 
-  Firework(int x, int y) : color = randomColor(), sparks = new List<Spark>() {
+  Firework(this.view, int x, int y) : color = randomColor(), sparks = new List<Spark>() {
     for(int i = 0; i < quantity; ++i) {
       sparks.add(new Spark(x, y, size));
     }
@@ -93,20 +87,13 @@ class Firework {
     for(int i = 0; i < sparks.length; ++i) {
       Spark s = sparks[i];
 
-      s.computeVelocity();
-      s.computeDecay(decay);
-      s.computeGravity(gravity);
-
-      s.draw(cx, color);
-
-
-      if(s.size <= 0.1 || s.posX <= 0 || s.posX >= 400 || s.posY >= 400) {
+      if(s.draw(this.view, color)) {
         sparks.removeRange(i, 1);
       }
     }
   }
 
-  bool isDismissed() => sparks.isEmpty();
+  bool dismissed() => sparks.isEmpty();
 }
 
 class FireworkView {
@@ -137,7 +124,7 @@ class FireworkView {
   }
 
   void explode(int x, int y) {
-    fireworks.add(new Firework(x - left, y - top));
+    fireworks.add(new Firework(this, x - left, y - top));
   }
 
   void update() {
@@ -148,7 +135,7 @@ class FireworkView {
 
       fw.update(cx);
 
-      if(fw.isDismissed()) {
+      if(fw.dismissed()) {
         fireworks.removeRange(i, 1);
       }
     }
