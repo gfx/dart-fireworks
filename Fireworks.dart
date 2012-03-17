@@ -49,7 +49,7 @@ class Spark {
   bool draw(FireworkView view, String color) {
     posX += velX;
     posY += velY;
- 
+
     velX *= decay;
     velY *= decay;
     size *= decay;
@@ -74,7 +74,7 @@ class Spark {
 class Firework {
   final String color;
   final List<Spark> sparks;
-  
+
   final FireworkView view;
 
   Firework(this.view, int x, int y) : color = randomColor(), sparks = new List<Spark>() {
@@ -120,6 +120,12 @@ class FireworkView {
       canvas.on.touchStart.add( (TouchEvent e) {
         explode(e.touches[0].pageX, e.touches[1].pageY);
       });
+
+
+      // for benchmarking
+      for(int i = 0; i < 3; i++) {
+        explode( random() * canvas.width, (canvas.height / 4).toInt());
+      }
     });
   }
 
@@ -169,11 +175,11 @@ class FPSWatcher {
 void main() {
   CanvasElement canvas = document.query("#night-sky");
 
-  FireworkView fm   = new FireworkView(canvas);
+  FireworkView view  = new FireworkView(canvas);
   FPSWatcher watcher = new FPSWatcher();
 
   window.setInterval(() {
-    fm.update();
+    view.update();
     watcher.update();
   }, 0);
 }
