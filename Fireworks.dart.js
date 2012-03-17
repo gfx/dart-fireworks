@@ -3454,38 +3454,29 @@ function Spark(posX, posY, size) {
   this.posY = posY;
   this.size = size;
   var angle = random() * (6.283185307179586);
-  var velocity = random() * (5.0);
+  var velocity = random() * (6.0);
   this.velX = Math.cos(angle) * velocity;
   this.velY = Math.sin(angle) * velocity;
-  this.sw = random() > (0.5);
 }
-Spark.prototype.computeVelocity = function() {
+Spark.prototype.draw = function(view, color) {
   this.posX = this.posX + this.velX;
   this.posY = this.posY + this.velY;
-}
-Spark.prototype.computeDecay = function(d) {
-  this.velX = this.velX * d;
-  this.velY = this.velY * d;
-  this.size = this.size * d;
-}
-Spark.prototype.computeGravity = function(g) {
-  this.posY = this.posY + g;
-}
-Spark.prototype.draw = function(cx, color) {
-  cx.beginPath();
-  cx.arc(this.posX, this.posY, this.size, (0), (6.283185307179586), true);
-  if (this.sw) {
-    cx.fillStyle = "rgb(255, 255, 255)";
-    this.sw = false;
-  }
-  else {
-    cx.fillStyle = color;
-    this.sw = true;
-  }
-  cx.fill();
+  this.velX = this.velX * (0.98);
+  this.velY = this.velY * (0.98);
+  this.size = this.size * (0.98);
+  this.posY = this.posY + (2.0);
+  view.cx.beginPath();
+  view.cx.arc(this.posX, this.posY, this.size, (0), (6.283185307179586), true);
+  view.cx.fillStyle = color;
+  view.cx.fill();
+  if (this.size <= (0.1)) return true;
+  if (this.posX <= (0) || this.posY <= (0)) return true;
+  if (this.posX >= view.width || this.posY >= view.height) return true;
+  return false;
 }
 // ********** Code for Firework **************
-function Firework(x, y) {
+function Firework(view, x, y) {
+  this.view = view;
   this.color = randomColor();
   this.sparks = new Array();
   for (var i = (0);
@@ -3497,16 +3488,12 @@ Firework.prototype.update = function(cx) {
   for (var i = (0);
    i < this.sparks.get$length(); ++i) {
     var s = this.sparks.$index(i);
-    s.computeVelocity();
-    s.computeDecay((0.98));
-    s.computeGravity((1.5));
-    s.draw(cx, this.color);
-    if (s.size <= (0.1) || s.posX <= (0) || s.posX >= (400) || s.posY >= (400)) {
+    if (s.draw(this.view, this.color)) {
       this.sparks.removeRange(i, (1));
     }
   }
 }
-Firework.prototype.isDismissed = function() {
+Firework.prototype.dismissed = function() {
   return this.sparks.isEmpty();
 }
 // ********** Code for FireworkView **************
@@ -3533,7 +3520,7 @@ function FireworkView(canvas) {
 FireworkView.prototype.get$left = function() { return this.left; };
 FireworkView.prototype.get$top = function() { return this.top; };
 FireworkView.prototype.explode = function(x, y) {
-  this.fireworks.add(new Firework(x - this.left, y - this.top));
+  this.fireworks.add(new Firework(this, x - this.left, y - this.top));
 }
 FireworkView.prototype.update = function() {
   if (this.fireworks.isEmpty()) return;
@@ -3541,7 +3528,7 @@ FireworkView.prototype.update = function() {
    i < this.fireworks.get$length(); ++i) {
     var fw = this.fireworks.$index(i);
     fw.update(this.cx);
-    if (fw.isDismissed()) {
+    if (fw.dismissed()) {
       this.fireworks.removeRange(i, (1));
     }
   }
@@ -3576,7 +3563,7 @@ function randomColor() {
   var rgb = new Array((3));
   for (var i = (0);
    i < rgb.get$length(); ++i) {
-    rgb.$setindex(i, (random() * (255)).toInt());
+    rgb.$setindex(i, (random() * (255) + (60)).toInt());
   }
   return ("rgb(" + rgb.$index((0)) + "," + rgb.$index((1)) + "," + rgb.$index((2)) + ")");
 }
