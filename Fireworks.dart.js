@@ -69,6 +69,29 @@ function $eq$(x, y) {
 $defProp(Object.prototype, '$eq', function(other) {
   return this === other;
 });
+function $mod$(x, y) {
+  if (typeof(x) == 'number') {
+    if (typeof(y) == 'number') {
+      var result = x % y;
+      if (result == 0) {
+        return 0;  // Make sure we don't return -0.0.
+      } else if (result < 0) {
+        if (y < 0) {
+          return result - y;
+        } else {
+          return result + y;
+        }
+      }
+      return result;
+    } else {
+      $throw(new IllegalArgumentException(y));
+    }
+  } else if (typeof(x) == 'object') {
+    return x.$mod(y);
+  } else {
+    $throw(new NoSuchMethodException(x, "operator %", [y]));
+  }
+}
 function $ne$(x, y) {
   if (x == null) return y != null;
   return (typeof(x) != 'object') ? x !== y : !x.$eq(y);
@@ -293,6 +316,18 @@ FutureAlreadyCompleteException.prototype.toString = function() {
 }
 // ********** Code for Math **************
 // ********** Code for top level **************
+function print$(obj) {
+  return _print(obj);
+}
+function _print(obj) {
+  if (typeof console == 'object') {
+    if (obj) obj = obj.toString();
+    console.log(obj);
+  } else if (typeof write === 'function') {
+    write(obj);
+    write('\n');
+  }
+}
 function _toDartException(e) {
   function attachStack(dartEx) {
     // TODO(jmesserly): setting the stack property is not a long term solution.
@@ -1787,7 +1822,7 @@ _ChildrenElementList.prototype.addAll = function(collection) {
   }
 }
 _ChildrenElementList.prototype.removeRange = function(start, length) {
-  $throw(const$0010);
+  $throw(const$0011);
 }
 _ChildrenElementList.prototype.getRange = function(start, length) {
   return new _FrozenElementList._wrap$ctor(_Lists.getRange(this, start, length, []));
@@ -3448,6 +3483,13 @@ function _completeMeasurementFutures() {
   }
 }
 //  ********** Library Fireworks **************
+// ********** Code for Random **************
+function Random() {}
+Random.next = function() {
+  $globals.Random_x = $globals.Random_x * (25214903917) + (11);
+  $globals.Random_x = $mod$($globals.Random_x, (281474976710655));
+  return $globals.Random_x * (3.552713678800501e-15);
+}
 // ********** Code for Spark **************
 function Spark(posX, posY, size) {
   this.posX = posX;
@@ -3499,6 +3541,7 @@ Firework.prototype.dismissed = function() {
 // ********** Code for FireworkView **************
 function FireworkView(canvas) {
   var $this = this; // closure support
+  this.numSparks = (0);
   this.fireworks = new Array();
   this.cx = canvas.getContext("2d");
   this.width = canvas.width;
@@ -3528,12 +3571,16 @@ FireworkView.prototype.explode = function(x, y) {
 }
 FireworkView.prototype.update = function() {
   if (this.fireworks.isEmpty()) return;
+  this.numSparks = (0);
   for (var i = (0);
    i < this.fireworks.get$length(); ++i) {
     var fw = this.fireworks.$index(i);
     fw.update(this.cx);
     if (fw.dismissed()) {
       this.fireworks.removeRange(i, (1));
+    }
+    else {
+      this.numSparks = this.numSparks + fw.sparks.get$length();
     }
   }
   this.cx.fillStyle = "rgba(0, 0, 0, 0.3)";
@@ -3544,24 +3591,19 @@ function FPSWatcher() {
   this.watch = new StopwatchImplementation.start$ctor();
   this.fps = (0);
 }
-FPSWatcher.prototype.update = function() {
+FPSWatcher.prototype.update = function(numSparks) {
   ++this.fps;
   if (this.watch.elapsedInMs() >= (1000)) {
-    var message = ("FPS: " + this.fps);
+    var message = ("FPS: " + this.fps + " (sparks: " + numSparks + ")");
     get$$document().query("#fps").set$innerHTML(message);
+    if (numSparks > (0)) print$(message);
     this.watch.reset();
     this.fps = (0);
   }
 }
 // ********** Code for top level **************
 function random() {
-  var N = (3);
-  var gen = (0.0);
-  for (var i = (0);
-   i < N; ++i) {
-    gen += Math.random();
-  }
-  return gen / N;
+  return Random.next();
 }
 function randomColor() {
   var rgb = new Array((3));
@@ -3577,7 +3619,7 @@ function main() {
   var watcher = new FPSWatcher();
   get$$window().setInterval((function () {
     view.update();
-    watcher.update();
+    watcher.update(view.numSparks);
   })
   , (0));
 }
@@ -3638,6 +3680,7 @@ function $dynamicSetMetadata(inputTable) {
 function $static_init(){
   $globals._firstMeasurementRequest = true;
   $globals._nextMeasurementFrameScheduled = false;
+  $globals.Random_x = (0);
 }
 var const$0000 = Object.create(_DeletedKeySentinel.prototype, {});
 var const$0001 = Object.create(NoMoreElementsException.prototype, {});
@@ -3647,7 +3690,7 @@ var const$0006 = Object.create(_SimpleClientRect.prototype, {left: {"value": (0)
 var const$0007 = Object.create(IllegalAccessException.prototype, {});
 var const$0008 = ImmutableList.ImmutableList$from$factory([]);
 var const$0009 = Object.create(EmptyElementRect.prototype, {client: {"value": const$0006, writeable: false}, offset: {"value": const$0006, writeable: false}, scroll: {"value": const$0006, writeable: false}, bounding: {"value": const$0006, writeable: false}, clientRects: {"value": const$0008, writeable: false}});
-var const$0010 = Object.create(NotImplementedException.prototype, {});
+var const$0011 = Object.create(NotImplementedException.prototype, {});
 var $globals = {};
 $static_init();
 main();
