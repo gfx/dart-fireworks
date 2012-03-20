@@ -105,6 +105,8 @@ class FireworkView {
 
   List<Firework> fireworks;
 
+  int numSparks = 0;
+
   FireworkView(CanvasElement canvas) : fireworks = new List<Firework>() {
     cx = canvas.getContext("2d");
 
@@ -136,6 +138,8 @@ class FireworkView {
   void update() {
     if(fireworks.isEmpty()) return;
 
+    numSparks = 0;
+
     for(int i = 0; i < fireworks.length; ++i) {
       Firework fw = fireworks[i];
 
@@ -143,6 +147,9 @@ class FireworkView {
 
       if(fw.dismissed()) {
         fireworks.removeRange(i, 1);
+      }
+      else {
+        numSparks += fw.sparks.length;
       }
     }
 
@@ -160,12 +167,13 @@ class FPSWatcher {
     fps   = 0;
   }
 
-  void update() {
+  void update(int numSparks) {
     ++fps;
 
     if(watch.elapsedInMs() >= 1000) {
-      String message = "FPS: $fps";
+      String message = "FPS: $fps (sparks: $numSparks)";
       document.query('#fps').innerHTML = message;
+      if(numSparks > 0) print(message);
       watch.reset();
       fps = 0;
     }
@@ -180,6 +188,6 @@ void main() {
 
   window.setInterval(() {
     view.update();
-    watcher.update();
+    watcher.update(view.numSparks);
   }, 0);
 }
