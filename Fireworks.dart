@@ -11,15 +11,15 @@ final num decay     = 0.98;
 final num gravity   = 2.0;
 final num speed     = 6.0;
 
-
-num random() {
-  final num N = 3;
-  num gen = 0.0;
-  for(int i = 0; i < N; ++i) {
-    gen += Math.random();
+class Random { // drand48
+  static num x = 0;
+  static num next() {
+    x = x * 0x5DEECE66D + 0xB;
+    x %= 0xFFFFFFFFFFFF;
+    return x * (1.0/(0xFFFFFFFFFFFF+1));
   }
-  return gen / N;
 }
+num random() => Random.next();
 
 String randomColor() {
   final List<int> rgb = new List<int>(3);
