@@ -5,7 +5,7 @@
 
 #import('dart:html');
 
-final num quantity  = 360;
+final num quantity  = 2000;
 final num size      = 2.0;
 final num decay     = 0.98;
 final num gravity   = 2.0;
@@ -19,7 +19,7 @@ class Random { // drand48
     return x * (1.0/(0xFFFFFFFFFFFF+1));
   }
 }
-num random() => Random.next();
+num random() => Math.random(); // Random.next();
 
 String randomColor() {
   final List<int> rgb = new List<int>(3);
@@ -122,11 +122,8 @@ class FireworkView {
         explode(e.touches[0].pageX, e.touches[1].pageY);
       });
 
-
-      // for benchmarking
-      for(int i = 0; i < 3; i++) {
-        explode( random() * canvas.width, (canvas.height / 4).toInt());
-      }
+    // initial one
+    explode(width / 2 + top, height / 3);
     });
   }
 
