@@ -63,11 +63,10 @@ class Spark {
 
     view.cx.fill();
 
-    // returns true if it dismissed
-    if(size <= 0.1) return true;
-    if(posX <= 0 || posY <= 0) return true;
-    if(posX >= view.width || posY >= view.height) return true;
-    return false;
+    if(size <= 0.1) return false;
+    if(posX <= 0 || posY <= 0) return false;
+    if(posX >= view.width || posY >= view.height) return false;
+    return true;
   }
 }
 
@@ -83,17 +82,17 @@ class Firework {
     }
   }
 
-  void update(CanvasRenderingContext2D cx) {
+  bool update() {
     for(int i = 0; i < sparks.length; ++i) {
       Spark s = sparks[i];
 
-      if(s.draw(this.view, color)) {
+      if(! s.draw(view, color)) {
         sparks.removeRange(i, 1);
       }
     }
+    return !sparks.isEmpty();
   }
 
-  bool dismissed() => sparks.isEmpty();
 }
 
 class FireworkView {
@@ -143,13 +142,11 @@ class FireworkView {
     for(int i = 0; i < fireworks.length; ++i) {
       Firework fw = fireworks[i];
 
-      fw.update(cx);
-
-      if(fw.dismissed()) {
-        fireworks.removeRange(i, 1);
+      if(fw.update()) {
+        numSparks += fw.sparks.length;
       }
       else {
-        numSparks += fw.sparks.length;
+        fireworks.removeRange(i, 1);
       }
     }
 
