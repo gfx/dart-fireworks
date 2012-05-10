@@ -70,6 +70,29 @@ function $eq$(x, y) {
 $defProp(Object.prototype, '$eq', function(other) {
   return this === other;
 });
+function $mod$(x, y) {
+  if (typeof(x) == 'number') {
+    if (typeof(y) == 'number') {
+      var result = x % y;
+      if (result == 0) {
+        return 0;  // Make sure we don't return -0.0.
+      } else if (result < 0) {
+        if (y < 0) {
+          return result - y;
+        } else {
+          return result + y;
+        }
+      }
+      return result;
+    } else {
+      $throw(new IllegalArgumentException(y));
+    }
+  } else if (typeof(x) == 'object') {
+    return x.$mod(y);
+  } else {
+    $throw(new NoSuchMethodException(x, "operator %", [y]));
+  }
+}
 function $ne$(x, y) {
   if (x == null) return y != null;
   return (typeof(x) != 'object') ? x !== y : !x.$eq(y);
@@ -1842,7 +1865,7 @@ _ChildrenElementList.prototype.addAll = function(collection) {
   }
 }
 _ChildrenElementList.prototype.removeRange = function(start, rangeLength) {
-  $throw(const$0011);
+  $throw(const$0012);
 }
 _ChildrenElementList.prototype.getRange = function(start, rangeLength) {
   return new _FrozenElementList._wrap$ctor(_Lists.getRange(this, start, rangeLength, []));
@@ -3506,45 +3529,58 @@ function _completeMeasurementFutures() {
     }
   }
 }
-function Spark(posX, posY, size) {
+function Config() {}
+function Random() {}
+Random.next = function() {
+  $globals.Random_x = $globals.Random_x * (25214903917) + (11);
+  $globals.Random_x = $mod$($globals.Random_x, (281474976710655));
+  return $globals.Random_x * (3.552713678800501e-15);
+}
+function Spark(posX, posY, size, color) {
+  this.state = (0);
   this.posX = posX;
   this.posY = posY;
   this.size = size;
+  this.color = color;
   var angle = random() * (6.283185307179586);
   var velocity = random() * (6.0);
   this.velX = Math.cos(angle) * velocity;
   this.velY = Math.sin(angle) * velocity;
 }
-Spark.prototype.draw = function(view, color) {
+Spark.prototype.draw = function(view) {
   this.posX = this.posX + this.velX;
-  this.posY = this.posY + this.velY;
+  this.posY = this.posY + (this.velY + (2.0));
   this.velX = this.velX * (0.98);
   this.velY = this.velY * (0.98);
   this.size = this.size * (0.98);
-  this.posY = this.posY + (2.0);
+  if (this.size < (0.5) && this.state == (0)) {
+    this.color = randomColor();
+    this.size = (2.0);
+    ++this.state;
+  }
   view.cx.beginPath();
   view.cx.arc(this.posX, this.posY, this.size, (0), (6.283185307179586), true);
-  view.cx.fillStyle = color;
+  view.cx.fillStyle = random() > (0.2) ? this.color : "white";
   view.cx.fill();
-  if (this.size <= (0.1)) return false;
-  if (this.posX <= (0) || this.posY <= (0)) return false;
+  if (this.size <= (0.01)) return false;
+  if (this.posX <= (0)) return false;
   if (this.posX >= view.width || this.posY >= view.height) return false;
   return true;
 }
 function Firework(view, x, y) {
   this.view = view;
-  this.color = randomColor();
   this.sparks = new Array();
+  var color = "lime";
   for (var i = (0);
-   i < (2000); ++i) {
-    this.sparks.add(new Spark(x, y, (2.0)));
+   i < (1000); ++i) {
+    this.sparks.add(new Spark(x, y, (2.0), color));
   }
 }
 Firework.prototype.update = function() {
   for (var i = (0);
    i < this.sparks.get$length(); ++i) {
     var s = this.sparks.$index(i);
-    if (!s.draw(this.view, this.color)) {
+    if (!s.draw(this.view)) {
       this.sparks.removeRange(i, (1));
     }
   }
@@ -3568,7 +3604,7 @@ function FireworkView(canvas) {
       $this.explode(e.touches.$index((0)).pageX, e.touches.$index((1)).pageY);
     })
     ), false);
-    $this.explode($this.width / (2) + $this.top, $this.height / (3));
+    $this.explode(($this.width / (2) + $this.top).toInt(), ($this.height / (3)).toInt());
   })
   );
 }
@@ -3608,7 +3644,7 @@ FPSWatcher.prototype.update = function(numSparks) {
   }
 }
 function random() {
-  return Math.random();
+  return Random.next();
 }
 function randomColor() {
   var rgb = new Array((3));
@@ -3666,6 +3702,7 @@ function main() {
 function $static_init(){
   $globals._firstMeasurementRequest = true;
   $globals._nextMeasurementFrameScheduled = false;
+  $globals.Random_x = (0);
 }
 var const$0000 = Object.create(_DeletedKeySentinel.prototype, {});
 var const$0001 = Object.create(NoMoreElementsException.prototype, {});
@@ -3676,7 +3713,7 @@ var const$0007 = Object.create(_SimpleClientRect.prototype, {left: {"value": (0)
 var const$0008 = Object.create(IllegalAccessException.prototype, {});
 var const$0009 = ImmutableList.ImmutableList$from$factory([]);
 var const$0010 = Object.create(EmptyElementRect.prototype, {offset: {"value": const$0007, writeable: false}, bounding: {"value": const$0007, writeable: false}, clientRects: {"value": const$0009, writeable: false}, client: {"value": const$0007, writeable: false}, scroll: {"value": const$0007, writeable: false}});
-var const$0011 = Object.create(NotImplementedException.prototype, {});
+var const$0012 = Object.create(NotImplementedException.prototype, {});
 var $globals = {};
 $static_init();
 if (typeof window != 'undefined' && typeof document != 'undefined' &&
