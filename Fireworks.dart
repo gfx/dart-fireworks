@@ -21,7 +21,7 @@ class Random { // drand48
     return x * (1.0/(0xFFFFFFFFFFFF+1));
   }
 }
-num random() => Random.next();
+num random() => Math.random(); // Random.next();
 
 String randomColor() {
   final List<int> rgb = new List<int>(3);
@@ -51,8 +51,8 @@ class Spark {
   }
 
   bool draw(FireworkView view) {
-    posX += velX;
-    posY += velY + Config.gravity;
+    posX += velX + (random() - 0.5);
+    posY += velY + (random() - 0.5) + Config.gravity;
 
     velX *= Config.decay;
     velY *= Config.decay;
