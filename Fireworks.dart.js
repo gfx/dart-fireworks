@@ -70,29 +70,6 @@ function $eq$(x, y) {
 $defProp(Object.prototype, '$eq', function(other) {
   return this === other;
 });
-function $mod$(x, y) {
-  if (typeof(x) == 'number') {
-    if (typeof(y) == 'number') {
-      var result = x % y;
-      if (result == 0) {
-        return 0;  // Make sure we don't return -0.0.
-      } else if (result < 0) {
-        if (y < 0) {
-          return result - y;
-        } else {
-          return result + y;
-        }
-      }
-      return result;
-    } else {
-      $throw(new IllegalArgumentException(y));
-    }
-  } else if (typeof(x) == 'object') {
-    return x.$mod(y);
-  } else {
-    $throw(new NoSuchMethodException(x, "operator %", [y]));
-  }
-}
 function $ne$(x, y) {
   if (x == null) return y != null;
   return (typeof(x) != 'object') ? x !== y : !x.$eq(y);
@@ -1865,7 +1842,7 @@ _ChildrenElementList.prototype.addAll = function(collection) {
   }
 }
 _ChildrenElementList.prototype.removeRange = function(start, rangeLength) {
-  $throw(const$0012);
+  $throw(const$0011);
 }
 _ChildrenElementList.prototype.getRange = function(start, rangeLength) {
   return new _FrozenElementList._wrap$ctor(_Lists.getRange(this, start, rangeLength, []));
@@ -3530,12 +3507,6 @@ function _completeMeasurementFutures() {
   }
 }
 function Config() {}
-function Random() {}
-Random.next = function() {
-  $globals.Random_x = $globals.Random_x * (25214903917) + (11);
-  $globals.Random_x = $mod$($globals.Random_x, (281474976710655));
-  return $globals.Random_x * (3.552713678800501e-15);
-}
 function Spark(posX, posY, size, color) {
   this.state = (0);
   this.posX = posX;
@@ -3548,8 +3519,8 @@ function Spark(posX, posY, size, color) {
   this.velY = Math.sin(angle) * velocity;
 }
 Spark.prototype.draw = function(view) {
-  this.posX = this.posX + this.velX;
-  this.posY = this.posY + (this.velY + (2.0));
+  this.posX = this.posX + (this.velX + (random() - (0.5)));
+  this.posY = this.posY + (this.velY + (random() - (0.5)) + (2.0));
   this.velX = this.velX * (0.98);
   this.velY = this.velY * (0.98);
   this.size = this.size * (0.98);
@@ -3644,7 +3615,7 @@ FPSWatcher.prototype.update = function(numSparks) {
   }
 }
 function random() {
-  return Random.next();
+  return Math.random();
 }
 function randomColor() {
   var rgb = new Array((3));
@@ -3702,7 +3673,6 @@ function main() {
 function $static_init(){
   $globals._firstMeasurementRequest = true;
   $globals._nextMeasurementFrameScheduled = false;
-  $globals.Random_x = (0);
 }
 var const$0000 = Object.create(_DeletedKeySentinel.prototype, {});
 var const$0001 = Object.create(NoMoreElementsException.prototype, {});
@@ -3713,7 +3683,7 @@ var const$0007 = Object.create(_SimpleClientRect.prototype, {left: {"value": (0)
 var const$0008 = Object.create(IllegalAccessException.prototype, {});
 var const$0009 = ImmutableList.ImmutableList$from$factory([]);
 var const$0010 = Object.create(EmptyElementRect.prototype, {offset: {"value": const$0007, writeable: false}, bounding: {"value": const$0007, writeable: false}, clientRects: {"value": const$0009, writeable: false}, client: {"value": const$0007, writeable: false}, scroll: {"value": const$0007, writeable: false}});
-var const$0012 = Object.create(NotImplementedException.prototype, {});
+var const$0011 = Object.create(NotImplementedException.prototype, {});
 var $globals = {};
 $static_init();
 if (typeof window != 'undefined' && typeof document != 'undefined' &&
