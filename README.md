@@ -4,7 +4,7 @@ Dart Fireworks
 
 # DEMO
 
-http://gfx.github.com/dart-shooting
+http://gfx.github.com/dart-fireworks
 
 # COPYRIGH AND LICENSE
 
